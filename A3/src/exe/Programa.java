@@ -1,7 +1,8 @@
 package exe;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Scanner;
 
 import entidades.Carta;
@@ -11,247 +12,254 @@ import entidades.Produto;
 
 public class Programa {
 
-	private final List<Produto> catalogoProdutos;
-	private final Scanner entrada;
-
-	public Programa() {
-		this.catalogoProdutos = new ArrayList<>();
-		this.entrada = new Scanner(System.in);
-		inicializarDadosPadrao();
-	}
-
 	public static void main(String[] args) {
-		Programa programa = new Programa();
-		programa.executarMenuPrincipal();
-	}
 
-	private void executarMenuPrincipal() {
-		boolean continuar = true;
-		while (continuar) {
-			exibirMenu();
-			String opcao = entrada.nextLine().trim();
-			switch (opcao) {
-			case "1":
-				cadastrarProdutoViaMenu();
-				break;
-			case "2":
-				ListarProdutosTabela();
-				break;
-			case "3":
-				buscarProdutoNome();
-				break;
-			case "4":
-				removerProduto();
-				break;
-			case "5":
-				System.out.println("Saindo do programa. :3");
-				continuar = false;
-				break;
-			default:
-				System.out.println("Opção inválida. Escolha 1 ,2 ,3, 4 ou 5.");
+		ArrayList<Produto> produtos = new ArrayList<>(); // Lista para guardar produtos
+		ArrayList<Produto> historico = new ArrayList<>();// Lista para guardar vendas
+		Scanner scanner = new Scanner(System.in); // Scanner para ler o teclado
+		produtos.add(new Jogo("Hollow Knight", 59.90, "Jogo", "Team Cherry", "Metroidvania")); // cadastra 7 objetos
+		produtos.add(new Jogo("Elden Ring", 39.50, "Jogo", "FromSoftware", "RPG"));
+		produtos.add(new Jogo("Five nights at freddys", 49.99, "Jogo", "Scott Cawthon", "Horror"));
+		produtos.add(new Carta("Dark Knight Detective", 0.22, "Carta", "Epico"));
+		produtos.add(new Carta("It Was You!", 0.15, "Carta", "Lendario"));
+		produtos.add(new Dlc("Bloodsaga", 9.99, "DLC", "Elden Ring"));
+		produtos.add(new Dlc("Pacote de skins", 4.99, "DLC", "Fifa")); // produto agr tem 7 referencias para objeto
+		int opcao = 0; // Variavel para controlar o menu
+		while (opcao != 5) { // loop do menu inicial
+			System.out.println("\nMENU:");
+			System.out.println("1 - Cadastrar (Jogo, DLC ou Carta)");
+			System.out.println("2 - Listar (tabela simples)");
+			System.out.println("3 - Buscar por nome / remover (Produto vendido) ");
+			System.out.println("4 - Consultar lucro");
+			System.out.println("5 - Sair");
+			System.out.print("Escolha: ");
+			opcao = scanner.nextInt(); // ler linha do teclado como inteiro
+			if (opcao == 1) { // Cadastrar (Jogo, DLC ou Carta)
+				System.out.println("Cadastrar: 1-Jogo  2-DLC 3- Carta");
+				scanner.nextLine();
+				String tipo = scanner.nextLine().trim(); // lê escolha do tipo
+				if (tipo.equals("1")) { // Ler atributos de jogo
+					System.out.print("Nome: ");
+					String nome = scanner.nextLine();
+					System.out.print("Valor (use ponto): ");
+					double valor = scanner.nextDouble();
+					String tipoProduto = "Jogo";
+					System.out.print("Desenvolvedor: ");
+					scanner.nextLine();
+					String dev = scanner.nextLine();
+					System.out.print("Genero: ");
+					String genero = scanner.nextLine();
+					produtos.add(new Jogo(nome, valor, tipoProduto, dev, genero)); // cria o obj jogo e add ele a lista
+					System.out.println("Jogo cadastrado. [Aperte ENTER para voltar]");
+				} else if (tipo.equals("2")) {
+					System.out.print("Nome: ");
+					String nome = scanner.nextLine();
+					System.out.print("Valor (use ponto): ");
+					double valor = scanner.nextDouble();
+					String tipoProduto = "DLC";
+					System.out.print("Jogo base: ");
+					String jogoBase = scanner.nextLine();
+					produtos.add(new Dlc(nome, valor, tipoProduto, jogoBase)); // cria o obj dlc e add a lista
+					System.out.println("DLC cadastrada. [Aperte ENTER para voltar]");
+				} else if (tipo.equals("3")) {
+					System.out.println("Nome: ");
+					String nome = scanner.nextLine();
+					System.out.println("Valor (use ponto): ");
+					double valor = scanner.nextDouble();
+					System.out.println("Raridade da carta: ");
+					String raridade = scanner.next();
+					produtos.add(new Carta(nome, valor, "Carta", raridade));
+					System.out.println("Carta cadastrada.");
+				} else { // opção invalida para cadastro
+					System.out.println("Opção inválida para cadastro.");
+				}
+				scanner.nextLine();
+			} else if (opcao == 2) { // Listar (tabela simples)
+				Collections.sort(produtos, Comparator.comparing(Produto::getNome)); // Ordena a tabela pelo nome
+				System.out.printf("%-3s %-25s %-10s %-10s\n", "ID", "Nome", "Tipo", "Valor"); // Lista os produtos em
+				System.out.println("-------------------------------------------"); // uma tabela com 3 atributos
+				for (int i = 0; i < produtos.size(); i++) { // Percorre o array e imprime cada elemento
+					Produto p = produtos.get(i); // produtos.get(i) retorna o elemento de indice i
+					System.out.printf("%-3d %-25s %-10s %.2f \n", i, p.getNome(), p.getTipo(), p.getValor());
+				}
+			} else if (opcao == 3) { // Buscar por nome / remover (Vender)
+				System.out.print("Digite o nome do produto para buscar: ");
+				scanner.nextLine();
+				String nomeBusca = scanner.nextLine();
+				boolean encontrado = false; // flag para dizer se algum produto foi encontrado
+				for (int i = 0; i < produtos.size(); i++) {
+					Produto p = produtos.get(i); // p é um roduto do array produtos
+					if (p.getNome().equalsIgnoreCase(nomeBusca)) {// equalsignore compara duas strings ignorando
+																	// maiusculas ou minusculas
+						encontrado = true;// se encontrou pelo menos um
+						System.out.println("\n--- Produto encontrado ---");
+						if (p instanceof Jogo) {// se produto for jogo mostrar os 5 atributos de jogo
+							Jogo j = (Jogo) p; // Downcasting de produto para jogo
+							System.out.println("Nome: " + j.getNome());
+							System.out.println("Valor: " + j.getValor());
+							System.out.println("Tipo: " + j.getTipo());
+							System.out.println("Desenvolvedor: " + j.getDesenvolvedor());
+							System.out.println("Genero: " + j.getGenero());
+
+							System.out.println("\nMENU:"); // Menu de opcoes para o produto buscado
+							System.out.println("1 - Modificar");
+							System.out.println("2 - Remover");
+							System.out.println("3 - Sair");
+							System.out.print("Escolha: ");
+							int escolha = scanner.nextInt();
+							scanner.nextLine();
+							switch (escolha) {
+							case 1: // Modificar
+								System.out.print("Nome: "); // Ler atributos novos do jogo
+								String nome = scanner.nextLine();
+								System.out.print("Valor (use ponto): ");
+								double valor = scanner.nextDouble();
+								System.out.print("Desenvolvedor: ");
+								scanner.nextLine();
+								String dev = scanner.nextLine();
+								System.out.print("Genero: ");
+								String genero = scanner.nextLine();
+								j.setNome(nome); // Subistitui os atributos lidos no objeto
+								j.setTipo("jogo");
+								j.setValor(valor);
+								j.setGenero(genero);
+								j.setDesenvolvedor(dev);
+								System.out.println("Jogo modificado.");
+								break;
+							case 2: // Remover
+								System.out.println("Tem certeza que deseja prosseguir com a remoção? S/N");
+								String c = scanner.nextLine().trim(); // Mensagem de confirmacao ao remover um objeto
+								if (c.equalsIgnoreCase("S")) {
+									historico.add(p); // Adiciona produto removido ao array historico
+									produtos.remove(i);
+									System.out.println("Produto removido");
+									i--; // mantem o for dentro dos limites do array produtos
+								} else {
+									System.out.println("Remoção Cancelada");
+								}
+								break;
+							case 3: // Sair
+								break;
+							default:
+								System.out.println("Escolha invalida");
+							}
+						} else if (p instanceof Dlc) { // se produto for jogo mostrar os 4 atributos da dlc
+							Dlc d = (Dlc) p; // Downcasting de produto para dlc
+							System.out.println("Nome: " + d.getNome());
+							System.out.println("Valor: " + d.getValor());
+							System.out.println("Tipo: " + d.getTipo());
+							System.out.println("Jogo base: " + d.getJogoBase());
+
+							System.out.println("\nMENU:"); // Menu de opcoes para o produto buscado
+							System.out.println("1 - Modificar");
+							System.out.println("2 - Remover");
+							System.out.println("3 - Sair");
+							System.out.print("Escolha: ");
+							int escolha = scanner.nextInt();
+							scanner.nextLine();
+							switch (escolha) {
+							case 1: // Modificar
+								System.out.print("Nome: "); // Ler atributos novos da dlc
+								String nome = scanner.nextLine();
+								System.out.print("Valor (use ponto): ");
+								double valor = scanner.nextDouble();
+								System.out.print("JogoBase: ");
+								String JogoBase = scanner.nextLine();
+								d.setNome(nome); // Subistitui os atributos lidos no objeto
+								d.setValor(valor);
+								d.setTipo("DLC");
+								d.setJogoBase(JogoBase);
+								System.out.println("DLC modificada.");
+								break;
+							case 2:// Remover
+								System.out.println("Tem certeza que deseja prosseguir com a remoção? S/N");
+								String c = scanner.nextLine().trim(); // Mensagem de confirmacao ao remover um objeto
+								if (c.equalsIgnoreCase("S")) {
+									historico.add(p);// Adiciona produto removido ao array historico
+									produtos.remove(i);
+									System.out.println("Produto removidosdosdos");
+									i--;// mantem o for dentro dos limites do array produtos
+								} else {
+									System.out.println("Remoção Cancelada");
+								}
+								break;
+							case 3: // Sair
+								break;
+							default:
+								System.out.println("Escolha invalida");
+							}
+						} else if (p instanceof Carta) {// se produto for jogo mostrar os 4 atributos da carta
+							Carta c = (Carta) p;// Downcasting de produto para carta
+							System.out.println("Nome: " + c.getNome());
+							System.out.println("Valor: " + c.getValor());
+							System.out.println("Tipo: " + c.getTipo());
+							System.out.println("Raridade: " + c.getRaridade());
+
+							System.out.println("\nMENU:");// Menu de opcoes para o produto buscado
+							System.out.println("1 - Modificar");
+							System.out.println("2 - Remover");
+							System.out.println("3 - Sair");
+							System.out.print("Escolha: ");
+							int escolha = scanner.nextInt();
+							scanner.nextLine();
+							switch (escolha) {
+							case 1:// Modificar
+								System.out.print("Nome: ");// Ler atributos novos da carta
+								String nome = scanner.nextLine();
+								System.out.print("Valor (use ponto): ");
+								double valor = scanner.nextDouble();
+								System.out.print("Quantidade total: ");
+								String raridade = scanner.next();
+								scanner.nextLine();
+								c.setNome(nome);// Subistitui os atributos lidos no objeto
+								c.setValor(valor);
+								c.setTipo("Carta");
+								c.setRaridade(raridade);
+								System.out.println("Carta modificada.");
+								break;
+							case 2:// Remover
+								System.out.println("Tem certeza que deseja prosseguir com a remoção? S/N");
+								String d = scanner.nextLine().trim();// Mensagem de confirmacao ao remover um objeto
+								if (d.equalsIgnoreCase("S")) {
+									historico.add(p);// Adiciona produto removido ao array historico
+									produtos.remove(i);
+									System.out.println("Produto removido");
+									i--;// mantem o for dentro dos limites do array produtos
+								} else {
+									System.out.println("Remoção Cancelada");
+								}
+								break;
+							case 3:// Sair
+								break;
+							default:
+								System.out.println("Escolha invalida");
+							}
+						}
+					}
+				}
+				if (!encontrado) { // se o produto buscado n for encontrado
+					System.out.println("Nenhum produto encontrado com esse nome.");
+				}
+			} else if (opcao == 4) { // Consultar lucro
+				double faturamento = 0.0; //Somatorio dos valores dos produtos do array historico
+				for (int i = 0; i < historico.size(); i++) {// Loop constroi a variavel faturamento
+					faturamento += historico.get(i).getValor();
+				}
+				System.out.println();
+				System.out.println("FATURAMENTO ");
+				System.out.println("-------------------------------------------");
+				System.out.printf("Total: R$%.2f %n", faturamento); //Lista o faturamento
+				System.out.println("-------------------------------------------");
+				System.out.println("LISTA DE PRODUTOS VENDIDOS: ");
+				for (int i = 0; i < historico.size(); i++) { //Lista os produtos do historico
+					System.out.println(historico.get(i).getNome());
+				}
+			} else if (opcao == 5) { // 5 = sair programa
+				System.out.println("Encerrando o programa. Obrigado.");
+			} else { // Se digitar um número diferente de 1,2,3,4,5
+				System.out.println("Opção inválida. Digite 1, 2, 3, 4 ou 5.");
 			}
-			System.out.println();
 		}
-		entrada.close();
-	}
-
-	private void exibirMenu() {
-		System.out.println("==== Menu ====");
-		System.out.println("1 - Cadastrar produto");
-		System.out.println("2 - Listar Produto (tabela)");
-		System.out.println("3 - Buscar produto por nome");
-		System.out.println("4 - Remover produto");
-		System.out.println("5 - Sair");
-		System.out.print("Escolher uma opção: ");
-	}
-
-	private void cadastrarProdutoViaMenu() {
-		System.out.println("Escolha o tipo de produto para cadastrar:");
-		System.out.println("1 - Jogo");
-		System.out.println("2 - Dlc");
-		System.out.println("3 - Carta");
-		System.out.print("Opção: ");
-		String tipo = entrada.nextLine().trim();
-
-		try {
-			System.out.print("Nome: ");
-			String nome = entrada.nextLine().trim();
-
-			System.out.print("Valor: ");
-			double valor = Double.parseDouble(entrada.nextLine().trim());
-
-			System.out.print("Tipo: ");
-			String categoria = entrada.nextLine().trim();
-
-			switch (tipo) {
-			case "1":
-				System.out.print("Dev: ");
-				String desenvolvedor = entrada.nextLine().trim();
-				System.out.print("Genero: ");
-				String genero = entrada.nextLine().trim();
-				Jogo novoJogo = new Jogo(nome, valor, categoria, desenvolvedor, genero);
-				catalogoProdutos.add(novoJogo);
-				System.out.println("Jogo cadastrado com sucesso.");
-				break;
-			case "2":
-				System.out.print("Jogo base da DLC: ");
-				String jogoBase = entrada.nextLine().trim();
-				Dlc novaDlc = new Dlc(nome, valor, categoria, jogoBase);
-				catalogoProdutos.add(novaDlc);
-				System.out.println("DLC cadastrada com sucesso");
-				break;
-			case "3":
-				System.out.println("Quantidade total da coleção: ");
-				int quantidadeTotal = Integer.parseInt(entrada.nextLine().trim());
-				System.out.print("Quantidade atual: ");
-				int quantidade = Integer.parseInt(entrada.nextLine().trim());
-				Carta novaCarta = new Carta(nome, valor, categoria, quantidadeTotal, quantidade);
-				catalogoProdutos.add(novaCarta);
-				System.out.println("Carta cadastrada com sucesso.");
-				break;
-			default:
-				System.out.println("Tipo inválido. Cadastro cancelado.");
-			}
-		} catch (NumberFormatException e) {
-			System.out.println("Entrada numérica invalida. Cadastro cancelado.");
-		} catch (Exception e) {
-			System.out.println("Erro inesperado durante o cadastro: " + e.getMessage());
-		}
-	}
-
-	private void ListarProdutosTabela() {
-		if (catalogoProdutos.isEmpty()) {
-			System.out.println("Nenhum produto cadastrado.");
-			return;
-		}
-
-		imprimirCabecalhoTabela();
-
-		for (Produto p : catalogoProdutos) {
-			String nome = p.getNome();
-			String valorStr = String.format("R$ %.2f", p.getValor());
-			String tipo = p.getTipo();
-			String especifico = obterDescricaoRapidaTipo(p);
-			System.out.printf("%-25s %-12s %-15s %20s%n", nome, valorStr, tipo, especifico);
-		}
-	}
-
-	private void imprimirCabecalhoTabela() {
-		System.out.printf("%-25s %-12s %-15s %-20s%n", "Nome", "Valor", "Tipo", "Especifico");
-		System.out.println("-------------------------------------------------------");
-	}
-
-	private String obterDescricaoRapidaTipo(Produto produto) {
-		if (produto instanceof Jogo) {
-			Jogo j = (Jogo) produto;
-			return "Jogo;Dev:" + j.getDesenvolvedor();
-		} else if (produto instanceof Dlc) {
-			Dlc d = (Dlc) produto;
-			return "DLC;base:" + "(ver detalhes)";
-		} else if (produto instanceof Carta) {
-			Carta c = (Carta) produto;
-			return "Carta;Qtd:" + c.getQuantidade() + "/" + c.getQuantidadeTotal();
-		} else {
-			return "Produto generico";
-		}
-	}
-
-	private void buscarProdutoNome() {
-		System.out.print("Informe o nome do produto para busca (texto): ");
-		String nomeBusca = entrada.nextLine().trim();
-
-		Produto encontrado = null;
-		for (Produto p : catalogoProdutos) {
-			if (p.getNome().equalsIgnoreCase(nomeBusca)) {
-				encontrado = p;
-				break;
-			}
-		}
-		if (encontrado == null) {
-			System.out.println("Produto não encontrado com nome: " + nomeBusca);
-			return;
-		}
-		exibirProdutoDetalhado(encontrado);
-	}
-
-	private void exibirProdutoDetalhado(Produto produto) {
-	    System.out.println("=== Detalhes Do Produto ===");
-
-	    if (produto instanceof Jogo) {
-	        Jogo jogo = (Jogo) produto;
-	        System.out.println("Nome: " + jogo.getNome());
-	        System.out.println("Valor: " + jogo.getValor());
-	        System.out.println("tipo do produto: " + jogo.getTipo());
-	        System.out.println("desenvolvedor: " + jogo.getDesenvolvedor());
-	        System.out.println("genero: " + jogo.getGenero());
-	    } else if (produto instanceof Dlc) {
-	        Dlc dlc = (Dlc) produto;
-	        System.out.println("Nome: " + dlc.getNome());
-	        System.out.println("Valor: " + dlc.getValor());
-	        System.out.println("tipo do produto: " + dlc.getTipo());
-	        System.out.println("Jogo base: " + dlc.getJogoBase());
-	    } else if (produto instanceof Carta) {
-	        Carta carta = (Carta) produto;
-	        System.out.println("Nome: " + carta.getNome());
-	        System.out.println("Valor: " + carta.getValor());
-	        System.out.println("tipo do produto: " + carta.getTipo());
-	        System.out.println("Quantidade Total : " + carta.getQuantidadeTotal());
-	        System.out.println("Quantidade : " + carta.getQuantidade());
-	        Carta.Broche(carta);
-	    } else {
-	        System.out.println("Tipo de produto não reconhecido. Exibindo apenas informações básicas.");
-	        System.out.println("Nome: " + produto.getNome());
-	        System.out.println("Valor: " + produto.getValor());
-	    }
-	}
-
-
-	private void inicializarDadosPadrao() {
-		catalogoProdutos.add(new Jogo("Hollow Knight", 79.90, "Rpg", "team cherry", "aventura"));
-		catalogoProdutos.add(new Jogo("Dark Souls", 79.90, "Rpg", "FromSoftware", "Souls Like"));
-
-		catalogoProdutos.add(new Dlc("Hollow Knight - Dlc 1", 30.00, "DLC", "Hollow Knight"));
-		catalogoProdutos.add(new Dlc("Dark Souls - Dlc 1", 15.00, "DLC", "Dark Souls"));
-		catalogoProdutos.add(new Dlc("Hollow Knight - Dlc 2", 70.00, "DLC", "Hollow Knight"));
-
-		catalogoProdutos.add(new Carta("CartaHollow", 12.00, "Colectable", 4, 4));
-		catalogoProdutos.add(new Carta("CartaDark", 8.00, "Colectable", 5, 2));
-	}
-	
-	private void removerProduto() {
-		if(catalogoProdutos.isEmpty()) {
-			System.out.println("Nenhum produto cadastrado.");
-			return;
-		}
-		
-		System.out.println("Informe o nome do produto a remover: ");
-		String RemovedorNome = entrada.nextLine().trim();
-		
-		Produto encontrado = null;
-		int indice = -1;
-		for (int i = 0; i < catalogoProdutos.size(); i++) {
-			Produto p = catalogoProdutos.get(i);
-			if (p.getNome().equalsIgnoreCase(RemovedorNome)) {
-				encontrado = p;
-				indice = i;
-				break;
-			}
-		}
-		
-		if (encontrado == null) {
-			System.out.println("Produto não encontrado com nome: " + RemovedorNome);
-			return;
-		}
-		System.out.println("Produto encontrado:");
-		exibirProdutoDetalhado(encontrado);
-		
-		System.out.print("Confirma remoção deste produto? (s/n): ");
-		String confirma = entrada.nextLine().trim().toLowerCase();
-		if (confirma.equals("s") || confirma.equals("sim")) {
-			catalogoProdutos.remove(indice);
-			System.out.println("produto removido");
-		} else {
-			System.out.println("remoção cancelada");
-		}
+		scanner.close();
 	}
 }
